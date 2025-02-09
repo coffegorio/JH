@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CustomTextField: UITextField {
+class CustomTextField: UITextField, UITextFieldDelegate {
     
     private let padding: CGFloat = 12
     private let leftImageView: UIImageView?
@@ -24,6 +24,8 @@ class CustomTextField: UITextField {
         self.layer.cornerRadius = 10
         self.layer.borderWidth = 2
         self.layer.borderColor = ApplicationColors.lighRoseColor.cgColor
+        self.returnKeyType = .done
+        self.delegate = self 
         
         setupLeftView()
     }
@@ -48,10 +50,16 @@ class CustomTextField: UITextField {
     }
     
     override func textRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.insetBy(dx: padding + 30, dy: 0) // Отступ текста внутри
+        return bounds.insetBy(dx: padding + 30, dy: 0)
     }
     
     override func editingRect(forBounds bounds: CGRect) -> CGRect {
         return bounds.insetBy(dx: padding + 30, dy: 0)
     }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 }
+

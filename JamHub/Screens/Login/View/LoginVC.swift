@@ -8,7 +8,12 @@
 import UIKit
 import SnapKit
 
-class RegistrationVC: UIViewController {
+class LoginVC: UIViewController {
+    
+    var viewModel: LoginViewModel!
+    
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     
     private let logoView: UIView = {
         let view = UIView()
@@ -49,21 +54,36 @@ class RegistrationVC: UIViewController {
     private lazy var buttonsStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [notRegisteredButton, forgotPasswordButton])
         stackView.axis = .horizontal
-        stackView.spacing = 20
+        stackView.spacing = 30
         stackView.alignment = .center
         return stackView
     }()
     
+    // MARK: - Жизненный цикл
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupUI()
         setupConstraints()
         setupActions()
+        setupKeyboardObservers()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        removeKeyboardObservers()
+    }
+    
+    // MARK: - UI Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
+        // Добавляем scrollView и contentView
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        scrollView.delaysContentTouches = false
+        
+        // Добавляем все элементы интерфейса в contentView
         [
             logoView,
             greetingLabel,
@@ -74,12 +94,23 @@ class RegistrationVC: UIViewController {
             passwordTextField,
             authButton,
             buttonsStackView
-        ].forEach { view.addSubview($0) }
+        ].forEach { contentView.addSubview($0) }
     }
     
+    // MARK: - Constraints Setup
     private func setupConstraints() {
+        // Ограничиваем scrollView краями safeArea
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalToSuperview()
+        }
+        
         logoView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(50)
+            make.top.equalTo(contentView).offset(50)
             make.centerX.equalToSuperview()
             make.size.equalTo(CGSize(width: 100, height: 100))
         }
@@ -125,11 +156,70 @@ class RegistrationVC: UIViewController {
         buttonsStackView.snp.makeConstraints { make in
             make.top.equalTo(authButton.snp.bottom).offset(20)
             make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-20)
         }
     }
     
+    // MARK: - Actions Setup
     private func setupActions() {
-        // Добавить обработчики нажатий
+        forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
+        notRegisteredButton.addTarget(self, action: #selector(notRegisteredTapped), for: .touchUpInside)
+    }
+    
+    @objc private func forgotPasswordTapped() {
+        viewModel.navigateToForgotPassword()
+    }
+    
+    @objc private func notRegisteredTapped() {
+        viewModel.navigateToCreateAccount()
+    }
+    
+    
+    // MARK: - Keyboard Handling
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillShow(notification:)),
+                                               name: UIResponder.keyboardWillShowNotification,
+                                               object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillHide(notification:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
+    }
+    
+    private func removeKeyboardObservers() {
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIResponder.keyboardWillShowNotification,
+                                                  object: nil)
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIResponder.keyboardWillHideNotification,
+                                                  object: nil)
+    }
+    
+    @objc private func keyboardWillShow(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
+            return
+        }
+        
+        let keyboardHeight = keyboardFrame.height
+        UIView.animate(withDuration: duration) {
+            self.scrollView.contentInset.bottom = keyboardHeight
+            self.scrollView.verticalScrollIndicatorInsets.bottom = keyboardHeight
+        }
+    }
+    
+    @objc private func keyboardWillHide(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
+            return
+        }
+        
+        UIView.animate(withDuration: duration) {
+            self.scrollView.contentInset.bottom = 0
+            self.scrollView.verticalScrollIndicatorInsets.bottom = 0
+        }
     }
 }
-

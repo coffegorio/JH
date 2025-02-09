@@ -9,16 +9,16 @@ import Foundation
 
 class PreviewViewModel {
     
-    private weak var coordinator: AppCoordinator?
+    private weak var coordinator: AuthCoordinator?
     
-    init(coordinator: AppCoordinator) {
+    init(coordinator: AuthCoordinator) {
         self.coordinator = coordinator
     }
     
-    func navigateToRegistration() {
+    func navigateToLogin() {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.coordinator?.showRegistration()
+            self.coordinator?.showLogin()
         }
         
     }

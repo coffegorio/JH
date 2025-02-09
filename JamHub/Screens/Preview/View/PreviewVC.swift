@@ -28,7 +28,7 @@ class PreviewVC: UIViewController {
         lottieView.play()
         
         
-        viewModel.navigateToRegistration()
+        viewModel.navigateToLogin()
     }
     
 }
