@@ -58,6 +58,13 @@ class ExperienceOfPlayingVC: UIViewController {
             make.leading.trailing.equalToSuperview().inset(40)
         }
         
+        [neverButton, beginnerButton, intermediateButton, advancedButton].forEach { button in
+            button.snp.makeConstraints { make in
+                make.width.equalTo(buttonsStackView.snp.width)
+                make.height.equalTo(50)
+            }
+        }
+        
     }
     
     private func setupActions() {
